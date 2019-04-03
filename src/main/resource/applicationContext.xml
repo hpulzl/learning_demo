@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd   
+        http://www.springframework.org/schema/context   
+        http://www.springframework.org/schema/context/spring-context-4.0.xsd
+        http://www.springframework.org/schema/cache
+        http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+       <!--使用注释-->
+    <context:annotation-config/>
+    <context:component-scan base-package="com.hpu.lzl"/>
+    <!--支持缓存注解-->
+    <cache:annotation-driven />
+    <!--redis单机，主从-->
+    <!--<import resource="applicationContext_redis.xml"/>-->
+    <!--redis集群-->
+    <import resource="applicationContext_redis_cluster.xml"/>
+    <import resource="applicationContext_es.xml"/>
+
+</beans>
+
