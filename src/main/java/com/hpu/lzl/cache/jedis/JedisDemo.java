@@ -27,9 +27,10 @@ public class JedisDemo {
 //        userView();
 //        batchSet();
 //        scan();
-        for (int i=0;i<10;i++){
-            new Thread(() -> transactionDemo()).start();
-        }
+//        for (int i=0;i<10;i++){
+//            new Thread(() -> transactionDemo()).start();
+//        }
+        pubSub();
     }
 
     public static void transactionDemo(){
@@ -51,8 +52,8 @@ public class JedisDemo {
     public static void workTwo(){
         try {
             getJedis();
-            String lockResult = jedis.set("lock:user:a", "true", "nx", "ex", 30L);
-            System.out.println("lock set nx " +lockResult);
+//            String lockResult = jedis.setnx("lock:user:a", "true", "nx", "ex", 30L);
+//            System.out.println("lock set nx " +lockResult);
             Long ttl = jedis.ttl("lock:user:a");
             System.out.println("lock ttl " + ttl);
         } finally {
@@ -126,7 +127,7 @@ public class JedisDemo {
         int cursor = 0;
         do{
             ScanResult<String> scan = jedis.scan(cursor + "", params);
-            cursor = Integer.parseInt(scan.getStringCursor());
+            cursor = Integer.parseInt(scan.getCursor());
             System.out.println("游标:" + cursor + " 获取的数据:" + scan.getResult());
         }while (cursor != 0);
     }
@@ -146,6 +147,46 @@ public class JedisDemo {
             System.out.println("是否可以访问:" + actionAllowed);
         }
         jedis.close();
+    }
+
+    public static void pubSub(){
+        final int[] count = {0};
+        // 发布消息
+        Thread pubThread = new Thread(() -> {
+            Jedis jedis = JedisPoolUtil.getInstance().getJedis();
+            while (true){
+                try {
+                    if (count[0] % 3 == 0){
+                        jedis.publish("news.tv","tv " + count[0]);
+                    } else if (count[0] % 3 == 1){
+                        jedis.publish("news.movies","movies " + count[0]);
+                    } else {
+                        jedis.publish("news.sports","sports " + count[0]);
+                    }
+                    Thread.sleep(5000);
+                    count[0]++;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        pubThread.start();
+
+        Thread subThread = new Thread(() -> {
+            Jedis jedis = JedisPoolUtil.getInstance().getJedis();
+            // 频道订阅
+            jedis.subscribe(new Subscriber(),"news.tv","news.sports","news.movies");
+            jedis.close();
+        });
+        subThread.start();
+
+        Thread pSubThread = new Thread(() -> {
+            Jedis jedis = JedisPoolUtil.getInstance().getJedis();
+            // 模式订阅
+            jedis.psubscribe(new Subscriber(),"news.*");
+            jedis.close();
+        });
+        pSubThread.start();
     }
 
     /**
@@ -171,6 +212,7 @@ public class JedisDemo {
             System.out.println(Thread.currentThread().getName() + " pop value " + lpop);
         }
     }
+
 
     public static void getJedis(){
         jedis = new Jedis("127.0.0.1",6379,0);

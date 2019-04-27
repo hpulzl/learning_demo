@@ -67,10 +67,10 @@ public class RedisDistributeTool {
         while (System.currentTimeMillis() - currentTime < timeOut){
             jedis = jedisPoolUtil.getJedis();
             try {
-                if (OK.equalsIgnoreCase(jedis.set(lockKey,lockValue,"nx","ex",expireTime))){
+                /*if (OK.equalsIgnoreCase(jedis.set(lockKey,lockValue,"nx","ex",expireTime))){
                     lock = true;
                     return lock;
-                }
+                }*/
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -92,10 +92,11 @@ public class RedisDistributeTool {
         try {
             lockValue = UUID.randomUUID().toString();
             jedis = jedisPoolUtil.getJedis();
-            if (OK.equalsIgnoreCase(jedis.set(lockKey,lockValue,"nx","ex",expireTime))){
+            /*if (OK.equalsIgnoreCase(jedis.set(lockKey,lockValue,"nx","ex",expireTime))){
                 lock = true;
                 return lock;
-            }
+            }*/
+            return lock;
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
